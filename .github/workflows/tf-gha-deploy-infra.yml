@@ -43,6 +43,29 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.azure_creds }}
+
+      - name: Create Terraform State Storage
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.53.0
+          inlineScript: |
+            # Create resource group for terraform state
+            az group create \
+              --name "rg-${{ inputs.namespace }}-${{ inputs.postfix }}${{ inputs.environment }}-tf" \
+              --location "${{ inputs.location }}"
+            
+            # Create storage account for terraform state
+            az storage account create \
+              --name "st${{ inputs.namespace }}${{ inputs.postfix }}${{ inputs.environment }}tf" \
+              --resource-group "rg-${{ inputs.namespace }}-${{ inputs.postfix }}${{ inputs.environment }}-tf" \
+              --location "${{ inputs.location }}" \
+              --sku "Standard_LRS" \
+              --kind "StorageV2"
+            
+            # Create container for terraform state
+            az storage container create \
+              --name "default" \
+              --account-name "st${{ inputs.namespace }}${{ inputs.postfix }}${{ inputs.environment }}tf"
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
