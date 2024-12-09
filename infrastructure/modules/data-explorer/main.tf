@@ -5,7 +5,6 @@ resource "azurerm_kusto_cluster" "cluster" {
   location            = var.location
   resource_group_name = var.rg_name
   streaming_ingestion_enabled = true
-  language_extensions = ["PYTHON"]
   count               = var.enable_monitoring ? 1 : 0
 
   sku {
