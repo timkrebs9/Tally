@@ -1,0 +1,16 @@
+{
+  "story_examples": [
+    {
+      "main_character": "friendly dragon",
+      "setting": "magical forest",
+      "theme": "friendship",
+      "age_group": "5-8 years"
+    },
+    {
+      "main_character": "curious kitten",
+      "setting": "cozy house",
+      "theme": "adventure",
+      "age_group": "3-6 years"
+    }
+  ]
+} 
