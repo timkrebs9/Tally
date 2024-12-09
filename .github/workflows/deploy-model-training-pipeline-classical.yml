@@ -11,6 +11,13 @@ jobs:
   deploy-infrastructure:
     needs: get-config
     uses: ./.github/workflows/tf-gha-deploy-infra.yml
+    with:
+      environment: ${{ needs.get-config.outputs.environment }}
+      location: ${{ needs.get-config.outputs.location }}
+      namespace: ${{ needs.get-config.outputs.namespace }}
+      postfix: ${{ needs.get-config.outputs.postfix }}
+      enable_aml_computecluster: ${{ needs.get-config.outputs.enable_aml_computecluster == 'true' }}
+      enable_monitoring: ${{ needs.get-config.outputs.enable_monitoring == 'true' }}
     secrets:
       azure_creds: ${{ secrets.AZURE_CREDENTIALS }}
       clientId: ${{ secrets.ARM_CLIENT_ID }}
