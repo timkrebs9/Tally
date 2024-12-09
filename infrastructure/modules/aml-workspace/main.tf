@@ -33,24 +33,6 @@ resource "azurerm_machine_learning_compute_cluster" "adl_aml_ws_compute_cluster"
   }
 }
 
-resource "azurerm_machine_learning_compute_cluster" "gpu_cluster" {
-  name                          = "gpu-cluster"
-  location                      = var.location
-  vm_priority                   = "Dedicated"
-  vm_size                       = "Standard_NC6s_v3"
-  machine_learning_workspace_id = azurerm_machine_learning_workspace.mlw.id
-  
-  scale_settings {
-    min_node_count                       = 0
-    max_node_count                       = 2
-    scale_down_nodes_after_idle_duration = "PT120S"
-  }
-
-  identity {
-    type = "SystemAssigned"
-  }
-}
-
 # # Datastore
 
 # resource "azurerm_resource_group_template_deployment" "arm_aml_create_datastore" {
