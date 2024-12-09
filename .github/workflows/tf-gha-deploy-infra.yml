@@ -47,7 +47,6 @@ jobs:
       - name: Create Terraform State Storage
         uses: azure/CLI@v1
         with:
-          azcliversion: 2.53.0
           inlineScript: |
             # Create resource group for terraform state
             az group create \
@@ -60,12 +59,14 @@ jobs:
               --resource-group "rg-${{ inputs.namespace }}-${{ inputs.postfix }}${{ inputs.environment }}-tf" \
               --location "${{ inputs.location }}" \
               --sku "Standard_LRS" \
-              --kind "StorageV2"
+              --kind "StorageV2" \
+              --allow-blob-public-access false
             
             # Create container for terraform state
             az storage container create \
               --name "default" \
-              --account-name "st${{ inputs.namespace }}${{ inputs.postfix }}${{ inputs.environment }}tf"
+              --account-name "st${{ inputs.namespace }}${{ inputs.postfix }}${{ inputs.environment }}tf" \
+              --auth-mode login
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
