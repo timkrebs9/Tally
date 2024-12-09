@@ -7,49 +7,60 @@ jobs:
       uses: Azure/mlops-templates/.github/workflows/read-yaml.yml@main
       with:
         file_name: config-infra-prod.yml
+
+  deploy-infrastructure:
+    needs: get-config
+    uses: ./.github/workflows/tf-gha-deploy-infra.yml
+    secrets:
+      azure_creds: ${{ secrets.AZURE_CREDENTIALS }}
+      clientId: ${{ secrets.ARM_CLIENT_ID }}
+      clientSecret: ${{ secrets.ARM_CLIENT_SECRET }}
+      subscriptionId: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      tenantId: ${{ secrets.ARM_TENANT_ID }}
+
   register-environment:
-      needs: get-config
+      needs: [get-config, deploy-infrastructure]
       uses: Azure/mlops-templates/.github/workflows/register-environment.yml@main
       with:
         resource_group: ${{ needs.get-config.outputs.resource_group }}
         workspace_name: ${{ needs.get-config.outputs.aml_workspace }}     
-        environment_file:  mlops/azureml/train/train-env.yml
+        environment_file: mlops/azureml/train/train-env.yml
         conda_file: data-science/environment/train-conda.yml
       secrets:
           creds: ${{secrets.AZURE_CREDENTIALS}}
           
   register-dataset:
-    needs: get-config
+    needs: [get-config, deploy-infrastructure]
     uses: Azure/mlops-templates/.github/workflows/register-dataset.yml@main
     with:
       resource_group: ${{ needs.get-config.outputs.resource_group }}
       workspace_name: ${{ needs.get-config.outputs.aml_workspace }}
-      name: taxi-data
+      name: story-params
       data_file: mlops/azureml/train/data.yml
     secrets:
       creds: ${{secrets.AZURE_CREDENTIALS}}
       
   create-compute:
-      needs: [get-config,register-environment,register-dataset]
+      needs: [get-config, deploy-infrastructure, register-environment, register-dataset]
       uses: Azure/mlops-templates/.github/workflows/create-compute.yml@main
       with:
-        cluster_name: cpu-cluster
-        size: Standard_DS3_v2
+        cluster_name: gpu-cluster
+        size: Standard_NC6s_v3
         min_instances: 0
-        max_instances: 4
-        cluster_tier: low_priority
+        max_instances: 2
+        cluster_tier: dedicated
         resource_group: ${{ needs.get-config.outputs.resource_group }}
         workspace_name: ${{ needs.get-config.outputs.aml_workspace }}     
       secrets:
           creds: ${{secrets.AZURE_CREDENTIALS}}
       
   run-pipeline:
-      needs: [get-config,register-environment,create-compute,register-dataset]
+      needs: [get-config, deploy-infrastructure, register-environment, create-compute, register-dataset]
       uses: Azure/mlops-templates/.github/workflows/run-pipeline.yml@main
       with:
         resource_group: ${{ needs.get-config.outputs.resource_group }}
         workspace_name: ${{ needs.get-config.outputs.aml_workspace }}     
-        parameters-file:  mlops/azureml/train/pipeline.yml
-        job-name: test
+        parameters-file: mlops/azureml/train/pipeline.yml
+        job-name: story-generation
       secrets:
           creds: ${{secrets.AZURE_CREDENTIALS}}
