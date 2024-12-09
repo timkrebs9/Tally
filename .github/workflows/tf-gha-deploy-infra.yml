@@ -38,6 +38,8 @@ jobs:
       tenantId: ${{ secrets.ARM_TENANT_ID }}
   deploy-azureml-resources:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/azure-cli:latest  # Update to use the latest Azure CLI image
     steps:
     - id: deploy-aml-workspace
       name: deploy-aml-workspace
